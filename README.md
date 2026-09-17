@@ -1,125 +1,96 @@
 # Dudes Being Dudes
 
-A custom fantasy-football league companion for Sleeper league `1395115881683484672`.
+A mobile-first fantasy-football companion for Sleeper league `1395115881683484672`.
 
-This is intentionally **not** a replacement for Sleeper. Sleeper remains the source of truth for rosters, scores, matchups, standings, waivers, and league management. This site adds the league-specific entertainment layer that Sleeper does not know how to create for your group.
+Sleeper remains the source of truth for rosters, scores, standings and league management. This site adds the custom league layer: Power Rankings, Fantasy Olympics, positional analysis, weekly recaps and private commissioner decision tools.
 
-## Included in v1
+## Current experience
 
-- Live Sleeper league metadata, managers, rosters and standings
-- Week selector and live weekly matchup cards
-- Fantasy Olympics generated automatically from weekly results
-  - High Score
-  - Photo Finish
-  - Bench Press when Sleeper returns per-player point detail
-  - Luck event / cold shower fallback events
-- All-play standings for the selected week
-- Weekly luck score (actual matchup result vs all-play win rate)
-- Automatic weekly awards
-- Commissioner recap editor with automatic weekly facts
-- Local recap archive and draft persistence
-- Responsive mobile/desktop UI
-- Zero API keys required
+### Public league site
+- Live Sleeper matchups and week selector
+- Composite Power Rankings with week-over-week movement
+- Power-vs-standings storylines
+- Fantasy Olympics and weekly awards
+- Season-to-date positional leaderboards
+- League standings
+- Published weekly recap archive
 
-## Run locally
+### Commissioner mode
+Open the site with `?commish=1`.
 
-Because browsers can restrict `fetch()` from `file://` pages, serve the directory with any local web server:
+Private tools include:
+- Steve's Edge action board
+- Start / Sit Optimizer
+- Waiver Priority Engine
+- Trade Target Finder
+- Buy Low / Sell High signals
+- Team Health and Championship Window
+- Handcuff / Injury Board
+- Opponent strategy
+- Streaming Planner
+- Drop Risk Analyzer
+- Trade Deadline Mode
+- Concise weekly recap prompt exporter for ChatGPT
 
-```bash
-python3 -m http.server 8080
-```
+The commissioner URL is a UI gate, not account authentication. Publishing recaps is protected by `.github/workflows/publish-recap.yml`, which only accepts publication from the authorized GitHub actor.
 
-Then open `http://localhost:8080`.
+## Mobile-first design
 
-Or use:
+The phone experience is intentionally vertical rather than carousel-heavy:
 
-```bash
-npx serve .
-```
+1. League hero
+2. This Week
+3. Steve's Edge in commissioner mode
+4. Power Rankings
+5. Fantasy Olympics
+6. Position Room
+7. Waivers in commissioner mode
+8. Standings
+9. Weekly Recaps
 
-## Deploy
-
-This is a zero-build static site and can be deployed directly to GitHub Pages, Vercel, Netlify, Cloudflare Pages, or any static host.
-
-### GitHub Pages
-
-1. Push these files to the repository root.
-2. Open **Settings → Pages**.
-3. Set **Deploy from a branch**.
-4. Select `main` and `/ (root)`.
+The UI includes a compact bottom navigation bar, active-section state, scroll progress, subtle section/card reveals and reduced-motion support. Horizontal scrolling is limited to small controls only when useful.
 
 ## Sleeper integration
 
 The league ID is configured in `app.js`:
 
 ```js
-leagueId: '1395115881683484672'
+const LEAGUE_ID = "1395115881683484672";
 ```
 
-The site reads the public Sleeper API directly:
+The site reads Sleeper's public read-only API directly. No API key or paid backend is required.
 
-- `/league/{league_id}`
-- `/league/{league_id}/users`
-- `/league/{league_id}/rosters`
-- `/league/{league_id}/matchups/{week}`
+Core data includes league metadata, users, rosters, weekly matchups, player data, trending adds, stats and available projections.
 
-Sleeper's public API is read-only and does not require an API key.
+## Weekly recap workflow
 
-## Recommended next phases
+1. Open commissioner mode.
+2. Tap **Build recap prompt**.
+3. Choose the week and build/copy the concise prompt.
+4. Paste it into ChatGPT for the finished write-up.
+5. Paste the finished recap back into the site.
+6. Publish through GitHub.
 
-### Phase 2 — persistent league content
-Replace localStorage recaps with Supabase or Firebase so commissioner posts sync across devices and are visible to everyone.
+The recap prompt intentionally focuses on matchup results, weekly awards, Power Rankings, model storylines and position leaders rather than dumping every available statistic.
 
-### Phase 3 — league history
-Walk `previous_league_id` season by season, save historical matchups, and build:
+## Deployment
 
-- All-time head-to-head records
-- Rivalries
-- Career ELO
-- Championships / playoff history
-- All-time records
-- Manager DNA
-- Trade regret
+The site is deployed free through GitHub Pages using `.github/workflows/pages.yml`.
 
-### Phase 4 — Tuesday content engine
-Generate a structured weekly payload that can feed:
+The Pages workflow validates the canonical JavaScript files before publishing:
+- `app.js`
+- `lab.js`
+- `edge.js`
+- `experience.js`
 
-- The commissioner recap
-- AI-written matchup blurbs
-- Weekly graphics
-- Fantasy Olympics
-- A 90–150 second recap video workflow
+There is no Yahoo/ESPN connector, scheduled private-league sync or provider-auth code in the current project.
 
-### Phase 5 — social games
-Add Receipt Keeper, anonymous preseason predictions, league trivia / immaculate grid, and season-long Olympic medal standings.
+## Local development
 
-## Notes
+Serve the repository directory with any static web server:
 
-Bench Press uses per-player matchup point data if Sleeper returns `players_points`. If that field is unavailable for a week, the UI automatically substitutes a luck-based event instead of showing incorrect data.
-
-## Commissioner recap workflow
-
-The public site contains no visible editing controls. The commissioner view is enabled with:
-
-```text
-?commish=1
+```bash
+python3 -m http.server 8080
 ```
 
-For the GitHub Pages URL that will be:
-
-```text
-https://steviej232.github.io/Dudes-Being-Dudes/?commish=1
-```
-
-In commissioner mode:
-
-1. Choose a week.
-2. Click **Write the recap for me**.
-3. The browser generates a complete editable draft from live Sleeper matchup, all-play and luck data.
-4. Edit the headline, intro or body.
-5. Click **Publish to league site**.
-6. Submit the prefilled GitHub issue that opens.
-
-`.github/workflows/publish-recap.yml` verifies the GitHub actor is exactly `steviej232`. Only that account can cause `data/recaps.json` to be updated. Other users cannot publish even if they discover the commissioner URL or manually create a similarly formatted issue.
-
-Because GitHub Pages is a static site, `?commish=1` is a UI gate rather than identity authentication. The actual authorization boundary is the GitHub workflow actor check.
+Then open `http://localhost:8080`.
