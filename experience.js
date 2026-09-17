@@ -4,6 +4,11 @@
   const topbar = document.querySelector('.topbar');
   const progress = document.getElementById('scrollProgress');
 
+  /* Neutralize legacy mobile-nav pseudo icons/hiding from analytics.css. */
+  const navReset=document.createElement('style');
+  navReset.textContent='.nav a:before{content:none!important}.topbar>.refresh-top:before{content:none!important}body.commish .nav a:nth-child(3){display:flex!important}';
+  document.head.appendChild(navReset);
+
   function onScroll(){
     const y = window.scrollY || 0;
     topbar?.classList.toggle('scrolled', y > 10);
