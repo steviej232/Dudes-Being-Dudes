@@ -28,6 +28,15 @@ jobs:
       - name: Bundle static enhancements
         shell: bash
         run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('edge.js')
+          s = p.read_text()
+          s = s.replace("opponent:null, window:null\n  };", "opponent:null, window:null, currentRows:[]\n  };")
+          s = s.replace("function currentRow(rosterId){ const rows=state.matchups.get(Number(state.currentWeek)); return Array.isArray(rows)?rows.find(r=>Number(r.roster_id)===Number(rosterId)):null; }", "function currentRow(rosterId){ const rows=edge.currentRows||[]; return rows.find(r=>Number(r.roster_id)===Number(rosterId))||null; }")
+          s = s.replace("if(!state.waiverPlayers?.length||force) await loadWaivers(force);\n      edge.lineup=await optimizeLineup();", "if(!state.waiverPlayers?.length||force) await loadWaivers(force);\n      edge.currentRows=await getMatchups(state.currentWeek);\n      edge.lineup=await optimizeLineup();")
+          p.write_text(s)
+          PY
           if [ -f mobile.css ]; then cat mobile.css >> analytics.css; fi
           if [ -f edge.css ]; then cat edge.css >> lab.css; fi
           if [ -f edge.js ]; then cat edge.js >> lab.js; fi
