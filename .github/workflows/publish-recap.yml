@@ -1,0 +1,82 @@
+name: Publish commissioner recap
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  publish:
+    if: >-
+      github.event.issue.user.login == 'steviej232' &&
+      contains(github.event.issue.body, '<!-- DBD_RECAP -->')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: main
+
+      - name: Parse recap and update archive
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, os, re, pathlib, sys
+
+          event = json.load(open(os.environ['GITHUB_EVENT_PATH'], encoding='utf-8'))
+          issue = event['issue']
+          body = issue.get('body') or ''
+          match = re.search(r'```json\s*(\{.*?\})\s*```', body, re.S)
+          if not match:
+              raise SystemExit('No JSON recap block found in issue body.')
+
+          recap = json.loads(match.group(1))
+          required = ('week', 'headline', 'body')
+          missing = [key for key in required if not recap.get(key)]
+          if missing:
+              raise SystemExit(f'Missing required recap fields: {missing}')
+
+          recap['week'] = int(recap['week'])
+          recap['headline'] = str(recap['headline'])[:240]
+          recap['intro'] = str(recap.get('intro') or '')[:1200]
+          recap['body'] = str(recap['body'])[:30000]
+          recap['date'] = str(recap.get('date') or '')[:10]
+
+          path = pathlib.Path('data/recaps.json')
+          try:
+              data = json.loads(path.read_text(encoding='utf-8'))
+              if not isinstance(data, list):
+                  data = []
+          except Exception:
+              data = []
+
+          data = [r for r in data if int(r.get('week', -1)) != recap['week']]
+          data.append(recap)
+          data.sort(key=lambda r: int(r.get('week', 0)), reverse=True)
+          path.parent.mkdir(parents=True, exist_ok=True)
+          path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
+          PY
+
+      - name: Commit published recap
+        shell: bash
+        run: |
+          git config user.name "Dudes Being Dudes Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/recaps.json
+          if git diff --cached --quiet; then
+            echo "No archive change needed."
+          else
+            git commit -m "Publish weekly recap from commissioner"
+            git push origin main
+          fi
+
+      - name: Close publish request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue close "${{ github.event.issue.number }}" \
+            --repo "${{ github.repository }}" \
+            --comment "Recap published to the league site. The Pages deploy will refresh automatically."
