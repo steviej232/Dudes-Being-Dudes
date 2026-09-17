@@ -7,6 +7,7 @@
     {key:'espn-688845290',provider:'ESPN',leagueId:'688845290'},
     {key:'espn-1726232411',provider:'ESPN',leagueId:'1726232411'},
   ];
+  const MANUAL_SYNC_URL='https://github.com/steviej232/Dudes-Being-Dudes/actions/workflows/sync-private-leagues.yml';
   let cache={leagues:[]};
 
   function teamNameLocal(id){ try{return teamName(Number(id));}catch(_){return `Team ${id}`;} }
@@ -31,6 +32,12 @@
   function record(t){return `${t?.wins||0}-${t?.losses||0}${t?.ties?`-${t.ties}`:''}`;}
   function opponentFor(league,teamId){ const m=(league.matchups||[]).find(x=>String(x.homeTeamId)===String(teamId)||String(x.awayTeamId)===String(teamId)); if(!m)return null; const opp=String(m.homeTeamId)===String(teamId)?m.awayTeamId:m.homeTeamId; return league.teams?.find(t=>String(t.id)===String(opp))||null; }
   function connectHref(c){ return `connect.html?provider=${encodeURIComponent(c.provider.toLowerCase())}&league=${encodeURIComponent(c.leagueId)}`; }
+  function updatedLabel(){
+    if(!cache.updatedAt) return 'Not synced yet';
+    const d=new Date(cache.updatedAt);
+    if(Number.isNaN(d.getTime())) return 'Last sync available';
+    return `Last private sync ${d.toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}`;
+  }
 
   function statusCopy(league){
     if(league.status==='connected') return league.source?.startsWith('browser')?'Connected on this device':'Connected';
@@ -58,7 +65,7 @@
         <div class="mini-tool"><b>🧠 Lineup</b><span>Start/sit decisions for this roster.</span></div>
         <div class="mini-tool"><b>🎯 Waivers</b><span>Best adds for this team's needs.</span></div>
         <div class="mini-tool"><b>🤝 Trades</b><span>Find surplus/need matches.</span></div>
-      </div>`:`<div class="league-connect-card"><strong>${statusCopy(league)}</strong><p>${esc(authHelp||'Waiting for the next free GitHub Actions sync.')}</p>${c.public?'':`<a class="league-connect-btn" href="${connectHref(c)}">Connect ${esc(c.provider)}</a>`}<small>The provider login happens on ${esc(c.provider)}. This site never asks for or stores your provider password.</small></div>`}
+      </div>`:`<div class="league-connect-card"><strong>${statusCopy(league)}</strong><p>${esc(authHelp||'Run a manual private-league sync when you want fresh cached data.')}</p>${c.public?'':`<a class="league-connect-btn" href="${connectHref(c)}">Connect ${esc(c.provider)}</a>`}<small>The provider login happens on ${esc(c.provider)}. This site never asks for or stores your provider password.</small></div>`}
     </article>`;
   }
 
@@ -69,7 +76,7 @@
       const edge=document.getElementById('edge'); (edge?.parentNode||document.querySelector('main')).insertBefore(section,edge||document.querySelector('main').firstChild);
     }
     const leagues=configs.map(c=>providerLeague(c));
-    section.innerHTML=`<div class="section-head"><div><span class="kicker">PRIVATE COMMAND CENTER</span><h2>My Teams</h2><p class="section-copy">Swipe between leagues. Sleeper remains the only public-facing league.</p></div><span class="pill">4 leagues</span></div>
+    section.innerHTML=`<div class="section-head"><div><span class="kicker">PRIVATE COMMAND CENTER</span><h2>My Teams</h2><p class="section-copy">Swipe between leagues. Sleeper remains the only public-facing league.</p><small class="private-sync-meta">${esc(updatedLabel())}</small></div><div class="private-sync-actions"><a class="btn btn-secondary" href="${MANUAL_SYNC_URL}" target="_blank" rel="noopener">↻ Refresh private leagues</a><span class="pill">4 leagues</span></div></div>
       <div class="league-switcher">${configs.map((c,i)=>{const l=leagues[i];return `<button class="league-chip ${i===0?'active':''}" data-go="${esc(c.key)}"><span>${esc(c.provider)}</span><strong>${esc((l.name||c.leagueId).slice(0,26))}</strong><small>${statusCopy(l)}</small></button>`;}).join('')}</div>
       <div class="league-pages" id="leaguePages">${configs.map((c,i)=>page(c,leagues[i])).join('')}</div>`;
     const pages=document.getElementById('leaguePages');
@@ -82,6 +89,8 @@
     try{ const r=await fetch(`data/private-leagues.json?ts=${Date.now()}`,{cache:'no-store'}); if(r.ok) cache=await r.json(); }catch(_){}
     render();
   }
+  window.addEventListener('focus',()=>load());
+  document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') load(); });
   const ready=setInterval(()=>{ if(state?.league&&state?.rosters?.length){clearInterval(ready);load();} },100);
   setTimeout(()=>clearInterval(ready),15000);
 })();
