@@ -1,6 +1,6 @@
 {
   "season": 2026,
-  "updatedAt": "2026-09-17T05:37:43.509200+00:00",
+  "updatedAt": "2026-09-17T05:38:05.304558+00:00",
   "leagues": [
     {
       "provider": "espn",
@@ -9,7 +9,7 @@
       "status": "needs_auth",
       "httpStatus": 401,
       "error": "{\"messages\":[\"You are not authorized to view this League.\"],\"details\":[{\"message\":\"You are not authorized to view this League.\",\"shortMessage\":\"You are not authorized to view this League.\",\"resolution\":null,\"type\":\"AUTH_LEAGUE_NOT_VISIBLE\",\"metaData\":null}]}",
-      "updatedAt": "2026-09-17T05:37:43.650784+00:00"
+      "updatedAt": "2026-09-17T05:38:05.417857+00:00"
     },
     {
       "provider": "espn",
@@ -18,7 +18,7 @@
       "status": "needs_auth",
       "httpStatus": 401,
       "error": "{\"messages\":[\"You are not authorized to view this League.\"],\"details\":[{\"message\":\"You are not authorized to view this League.\",\"shortMessage\":\"You are not authorized to view this League.\",\"resolution\":null,\"type\":\"AUTH_LEAGUE_NOT_VISIBLE\",\"metaData\":null}]}",
-      "updatedAt": "2026-09-17T05:37:43.737265+00:00"
+      "updatedAt": "2026-09-17T05:38:05.587631+00:00"
     },
     {
       "provider": "yahoo",
@@ -27,7 +27,7 @@
       "status": "needs_auth",
       "httpStatus": 401,
       "error": "{\"error\":{\"lang\":\"en-US\",\"description\":\"Please provide valid credentials. OAuth oauth_problem=\\\"unable_to_determine_oauth_type\\\", realm=\\\"yahooapis.com\\\"\"}}",
-      "updatedAt": "2026-09-17T05:37:44.051052+00:00"
+      "updatedAt": "2026-09-17T05:38:05.690288+00:00"
     }
   ]
 }
