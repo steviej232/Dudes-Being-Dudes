@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="description" content="Dudes Being Dudes — private fantasy football league HQ powered by Sleeper data." />
+  <title>Dudes Being Dudes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="noise"></div>
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="Dudes Being Dudes home">
+      <span class="brand-mark">DBD</span>
+      <span>
+        <strong>Dudes Being Dudes</strong>
+        <small>Fantasy Football League HQ</small>
+      </span>
+    </a>
+    <nav class="nav" aria-label="Primary navigation">
+      <a href="#week">This Week</a>
+      <a href="#olympics">Olympics</a>
+      <a href="#analytics">The Lab</a>
+      <a href="#standings">Standings</a>
+      <a href="#history">Recaps</a>
+    </nav>
+    <button class="btn btn-ghost" id="refreshBtn" type="button">↻ Refresh Sleeper</button>
+  </header>
+
+  <main id="top">
+    <section class="hero wrap">
+      <div class="hero-copy">
+        <div class="eyebrow" id="leagueStatus">CONNECTING TO SLEEPER…</div>
+        <h1>Where the matchup ends<br><span>and the nonsense begins.</span></h1>
+        <p id="leagueIntro">Pulling your real league, managers, records, and weekly matchups from Sleeper.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#week">See this week</a>
+          <button class="btn btn-secondary commish-only" type="button" id="commissionerBtn">Commissioner mode</button>
+        </div>
+      </div>
+      <div class="hero-card glass">
+        <div class="hero-card-top">
+          <div>
+            <span class="kicker">LIVE LEAGUE</span>
+            <h2 id="leagueName">Dudes Being Dudes</h2>
+          </div>
+          <span class="live-dot">LIVE</span>
+        </div>
+        <div class="stat-strip">
+          <div><strong id="teamCount">—</strong><span>Teams</span></div>
+          <div><strong id="currentWeek">—</strong><span>Week</span></div>
+          <div><strong id="seasonYear">—</strong><span>Season</span></div>
+        </div>
+        <div class="mini-callout" id="heroCallout">Loading league chaos…</div>
+      </div>
+    </section>
+
+    <section class="wrap section" id="week">
+      <div class="section-head">
+        <div>
+          <span class="kicker">THIS WEEK</span>
+          <h2 id="weekTitle">Matchup board</h2>
+        </div>
+        <div class="segmented" id="weekPicker" aria-label="Select week"></div>
+      </div>
+      <div class="matchup-grid" id="matchupGrid">
+        <div class="skeleton tall"></div><div class="skeleton tall"></div><div class="skeleton tall"></div>
+      </div>
+    </section>
+
+    <section class="wrap section" id="olympics">
+      <div class="section-head">
+        <div>
+          <span class="kicker">SIDE QUEST</span>
+          <h2>Fantasy Olympics</h2>
+          <p class="section-copy">Automatic medals from the stuff that actually happened in your league.</p>
+        </div>
+        <span class="pill">No commissioner math</span>
+      </div>
+      <div class="olympics-grid" id="olympicsGrid">
+        <div class="skeleton medal"></div><div class="skeleton medal"></div><div class="skeleton medal"></div><div class="skeleton medal"></div>
+      </div>
+    </section>
+
+    <section class="wrap section" id="analytics">
+      <div class="section-head">
+        <div>
+          <span class="kicker">THE LAB</span>
+          <h2>Who’s good. Who’s lucky. Who’s lying to themselves.</h2>
+          <p class="section-copy">All-play results compare every team against every other team that week.</p>
+        </div>
+      </div>
+      <div class="lab-grid">
+        <article class="panel panel-dark">
+          <div class="panel-title"><span>🍀</span><div><small>LUCK WATCH</small><h3>Record vs. all-play</h3></div></div>
+          <div id="luckList" class="rank-list"></div>
+        </article>
+        <article class="panel">
+          <div class="panel-title"><span>📊</span><div><small>WEEKLY POWER</small><h3>All-play standings</h3></div></div>
+          <div id="allPlayList" class="rank-list"></div>
+        </article>
+        <article class="panel">
+          <div class="panel-title"><span>🏆</span><div><small>WEEKLY AWARDS</small><h3>The hardware</h3></div></div>
+          <div id="awardsList" class="award-list"></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="wrap section" id="standings">
+      <div class="section-head">
+        <div><span class="kicker">THE BORING BUT IMPORTANT PART</span><h2>League standings</h2></div>
+      </div>
+      <div class="table-shell panel">
+        <table>
+          <thead><tr><th>#</th><th>Team</th><th>Record</th><th>PF</th><th>PA</th><th>Streak</th></tr></thead>
+          <tbody id="standingsBody"><tr><td colspan="6">Loading Sleeper standings…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="wrap section" id="history">
+      <div class="section-head">
+        <div><span class="kicker">LEAGUE LORE</span><h2>Weekly recap archive</h2><p class="section-copy">Commissioner write-ups stay separate from Sleeper and live here forever.</p></div>
+        <button class="btn btn-primary commish-only" id="newRecapBtn" type="button">+ New recap</button>
+      </div>
+      <div class="recap-grid" id="recapGrid"></div>
+    </section>
+
+    <section class="wrap section bottom-cta">
+      <div>
+        <span class="kicker">NEXT UP</span>
+        <h2>Turn each Tuesday into a league content drop.</h2>
+        <p>Scores and analytics auto-fill from Sleeper. You add the jokes, receipts, and context only your league knows.</p>
+      </div>
+      <button class="btn btn-light commish-only" id="ctaRecapBtn" type="button">Write this week’s recap</button>
+    </section>
+  </main>
+
+  <footer class="footer wrap">
+    <div><strong>Dudes Being Dudes</strong><span>Powered by Sleeper’s public read-only API.</span></div>
+    <div class="footer-meta">League <code>1395115881683484672</code></div>
+  </footer>
+
+  <dialog id="commissionerDialog" class="dialog">
+    <form method="dialog" class="dialog-card" id="recapForm">
+      <div class="dialog-head">
+        <div><span class="kicker">COMMISSIONER MODE</span><h2>New weekly recap</h2></div>
+        <button class="icon-btn" value="cancel" aria-label="Close">×</button>
+      </div>
+      <div class="commish-generator">
+        <div>
+          <strong>Start with a full draft</strong>
+          <span>I’ll turn the selected week’s Sleeper scores, margins, all-play results and luck data into an editable recap.</span>
+        </div>
+        <button class="btn btn-primary" type="button" id="generateRecapBtn">✨ Write the recap for me</button>
+      </div>
+      <div class="form-grid">
+        <label>Week<select id="recapWeek"></select></label>
+        <label>Style<select id="recapStyle"><option value="funny">Funny / roast-heavy</option><option value="balanced">Balanced</option><option value="sportswriter">Sportswriter</option></select></label>
+        <label class="full">Headline<input id="recapHeadline" placeholder="Week 4 was an absolute disaster" /></label>
+        <label class="full">Opening take<textarea id="recapIntro" rows="3" placeholder="Set the scene…"></textarea></label>
+        <label class="full">Full recap<textarea id="recapBody" rows="14" placeholder="Matchup notes, trash talk, receipts, awards…"></textarea></label>
+      </div>
+      <div class="auto-summary" id="autoSummary"></div>
+      <div class="dialog-actions">
+        <button class="btn btn-secondary" type="button" id="saveDraftBtn">Save draft</button>
+        <button class="btn btn-primary" type="button" id="publishBtn">Publish to league site</button>
+      </div>
+      <p class="form-note">Commissioner publishing is verified by GitHub. Only <strong>steviej232</strong> can trigger the workflow that updates the shared recap archive. Drafts stay private on this device until you publish.</p>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js" defer></script>
+</body>
+</html>
