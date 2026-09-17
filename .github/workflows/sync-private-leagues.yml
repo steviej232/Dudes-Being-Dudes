@@ -6,8 +6,6 @@ on:
     paths:
       - 'scripts/sync_private_leagues.py'
       - '.github/workflows/sync-private-leagues.yml'
-  schedule:
-    - cron: '17 */4 * * *'
   workflow_dispatch:
 
 permissions:
