@@ -6,4 +6,25 @@
 .insight-row{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:9px;align-items:center;padding:11px 0;border-top:1px solid rgba(128,128,128,.18)}
 .insight-row:first-child{border-top:0}.insight-rank{font:800 .8rem Manrope;color:#94a0b0}.insight-main{min-width:0}.insight-main strong{display:block;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.insight-main small{display:block;color:#9da8b6;font-size:.68rem;line-height:1.35;margin-top:2px}.insight-main em{display:inline-block;margin-top:5px;padding:3px 7px;border-radius:999px;background:rgba(255,255,255,.09);font-style:normal;font-size:.61rem;font-weight:800;color:#dbe5ef}
 .power-row{display:grid;grid-template-columns:26px minmax(0,1fr) 54px 34px;gap:9px;align-items:center;padding:11px 0;border-top:1px solid #ebe6dc}.power-row:first-child{border-top:0}.power-rank{font:800 1rem Manrope;color:#7b818a}.power-team{min-width:0}.power-team strong{display:block;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.power-team small{display:block;color:var(--muted);font-size:.67rem;line-height:1.35;margin-top:2px}.power-score{text-align:right}.power-score strong{display:block;font:800 1.05rem Manrope}.power-score span{display:block;font:800 .52rem Manrope;letter-spacing:.08em;color:var(--muted)}.power-move{display:inline-flex;justify-content:center;align-items:center;font:800 .67rem Manrope;border-radius:8px;padding:5px 3px}.power-move.up{color:#137a52;background:#e7f7ef}.power-move.down{color:#a93437;background:#fdeaea}.power-move.flat{color:#7b818a;background:#f0ede7}
-@media(max-width:650px){.panel-explain{font-size:.74rem}.insight-row{grid-template-columns:22px minmax(0,1fr) auto}.insight-main small{font-size:.65rem}.power-row{grid-template-columns:22px minmax(0,1fr) 50px 30px}.power-team small{font-size:.64rem}.lab-feature{padding:17px}}
+
+/* Model recommendations */
+.lab-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.lab-recommendations{min-width:0}
+.recommendation-list{display:grid;gap:9px}
+.recommendation-card{display:grid;grid-template-columns:36px minmax(0,1fr);gap:10px;padding:11px;border:1px solid #e9e3d8;border-radius:14px;background:#faf8f2}
+.rec-icon{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:#eee9df;font-size:1rem}
+.recommendation-card small{display:block;font:800 .6rem Manrope;letter-spacing:.1em;color:var(--muted)}
+.recommendation-card strong{display:block;margin-top:2px;font-size:.9rem}.recommendation-card p{margin:3px 0 0;color:var(--muted);font-size:.7rem;line-height:1.4}
+.recommendation-card.warn{background:#fff7e8;border-color:#efd09d}.recommendation-card.warn .rec-icon{background:#ffe6b9}
+.recommendation-card.good{background:#edf8f1;border-color:#b9dfc8}.recommendation-card.good .rec-icon{background:#d8f0e1}
+.recommendation-card.bad{background:#fff0ef;border-color:#efc1bf}.recommendation-card.bad .rec-icon{background:#f8d9d7}
+
+/* Commissioner ChatGPT prompt handoff */
+.prompt-export{grid-column:1/-1;border:1px solid #c9d8ff;background:#eef4ff;border-radius:16px;padding:13px}
+.prompt-export label{display:flex;flex-direction:column;gap:7px;font-weight:800;font-size:.78rem}
+.prompt-export textarea{width:100%;min-height:190px;border:1px solid #b9caef;background:#fff;border-radius:12px;padding:11px 12px;color:var(--ink);resize:vertical;line-height:1.4}
+.prompt-actions{display:flex;align-items:center;gap:10px;margin-top:10px}.prompt-actions span{font-size:.72rem;color:#52627a}
+.pasteback-label{grid-column:1/-1;padding:10px 0 0;border-top:1px dashed #cfc8bb;margin-top:2px}.pasteback-label span{display:block;font:800 .6rem Manrope;letter-spacing:.1em;color:var(--blue)}.pasteback-label strong{display:block;margin-top:2px;font-size:.9rem}
+
+@media(max-width:900px){.lab-grid{grid-template-columns:1fr}}
+@media(max-width:650px){.panel-explain{font-size:.74rem}.insight-row{grid-template-columns:22px minmax(0,1fr) auto}.insight-main small{font-size:.65rem}.power-row{grid-template-columns:22px minmax(0,1fr) 50px 30px}.power-team small{font-size:.64rem}.lab-feature{padding:17px}.prompt-export{padding:11px}.prompt-export textarea{min-height:240px}.prompt-actions{align-items:stretch;flex-direction:column}.prompt-actions .btn{width:100%}.prompt-actions span{text-align:center}.recommendation-card{padding:10px}}
