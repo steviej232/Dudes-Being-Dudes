@@ -30,7 +30,7 @@ jobs:
 
       - name: Commit refreshed cache
         run: |
-          if git diff --quiet -- data/private-leagues.json; then
+          if [ -z "$(git status --porcelain -- data/private-leagues.json)" ]; then
             echo 'No league-data changes.'
             exit 0
           fi
