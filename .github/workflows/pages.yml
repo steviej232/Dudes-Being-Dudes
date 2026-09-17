@@ -30,9 +30,11 @@ jobs:
         run: |
           cp lab-v2.js lab.js
           cat edge-v2.js >> lab.js
+          cat multi-league.js >> lab.js
           if [ -f mobile.css ]; then cat mobile.css >> analytics.css; fi
           if [ -f compact-v2.css ]; then cat compact-v2.css >> analytics.css; fi
           if [ -f edge-v2.css ]; then cat edge-v2.css >> lab.css; fi
+          if [ -f multi-league.css ]; then cat multi-league.css >> lab.css; fi
 
       - name: Validate bundle
         shell: bash
