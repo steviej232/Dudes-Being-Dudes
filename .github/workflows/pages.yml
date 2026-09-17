@@ -25,11 +25,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Validate site JavaScript
+      - name: Validate Sleeper-only site
+        shell: bash
         run: |
           node --check app.js
           node --check lab.js
           node --check edge.js
+          node --check experience.js
+          test ! -e connect.html
+          test ! -e connect.js
+          test ! -e multi-league.js
+          test ! -e data/private-leagues.json
+          ! grep -q "multi-league\|connect.html\|private-leagues" index.html
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
