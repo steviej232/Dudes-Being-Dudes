@@ -25,6 +25,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Bundle static enhancements
+        shell: bash
+        run: |
+          if [ -f mobile.css ]; then cat mobile.css >> analytics.css; fi
+          if [ -f edge.css ]; then cat edge.css >> lab.css; fi
+          if [ -f edge.js ]; then cat edge.js >> lab.js; fi
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
