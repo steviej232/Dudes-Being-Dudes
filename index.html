@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#0f172a" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#111827" />
   <meta name="description" content="Dudes Being Dudes — fantasy football league HQ powered by Sleeper data." />
   <title>Dudes Being Dudes</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,35 +12,37 @@
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="analytics.css" />
   <link rel="stylesheet" href="lab.css" />
+  <link rel="stylesheet" href="edge.css" />
+  <link rel="stylesheet" href="experience.css" />
 </head>
 <body>
   <div class="noise"></div>
+  <div class="scroll-progress" aria-hidden="true"><i id="scrollProgress"></i></div>
+
   <header class="topbar">
     <a class="brand" href="#top" aria-label="Dudes Being Dudes home">
       <span class="brand-mark">DBD</span>
-      <span><strong>Dudes Being Dudes</strong><small>Fantasy Football League HQ</small></span>
+      <span><strong>Dudes Being Dudes</strong><small>League HQ</small></span>
     </a>
     <nav class="nav" aria-label="Primary navigation">
-      <a href="#week">This Week</a>
-      <a href="#olympics">Olympics</a>
-      <a href="#analytics">The Lab</a>
-      <a href="#positions">Positions</a>
-      <a href="#standings">Standings</a>
-      <a href="#history">Recaps</a>
-      <a class="commish-only" href="#waivers">Waivers</a>
+      <a href="#week" data-nav="week"><span>🏈</span><b>Week</b></a>
+      <a href="#analytics" data-nav="analytics"><span>⚡</span><b>Power</b></a>
+      <a class="commish-only" href="#edge" data-nav="edge"><span>🎯</span><b>Edge</b></a>
+      <a href="#standings" data-nav="standings"><span>🏆</span><b>Table</b></a>
+      <a href="#history" data-nav="history"><span>📝</span><b>Recaps</b></a>
     </nav>
-    <button class="btn btn-ghost" id="refreshBtn" type="button">↻ Refresh Sleeper</button>
+    <button class="btn btn-ghost refresh-top" id="refreshBtn" type="button" aria-label="Refresh Sleeper">↻ <span>Refresh</span></button>
   </header>
 
   <main id="top">
-    <section class="hero wrap">
+    <section class="hero wrap reveal-section">
       <div class="hero-copy">
         <div class="eyebrow" id="leagueStatus">CONNECTING TO SLEEPER…</div>
-        <h1>Where the matchup ends<br><span>and the nonsense begins.</span></h1>
-        <p id="leagueIntro">Pulling your real league, managers, records, and weekly matchups from Sleeper.</p>
+        <h1>Your league.<br><span>More personality.</span></h1>
+        <p id="leagueIntro">Live matchups, power rankings, league nonsense, and commissioner tools built on top of Sleeper.</p>
         <div class="hero-actions">
-          <a class="btn btn-primary" href="#week">See this week</a>
-          <button class="btn btn-secondary commish-only" type="button" id="commissionerBtn">Write weekly recap</button>
+          <a class="btn btn-primary" href="#week">See this week <span>↓</span></a>
+          <button class="btn btn-secondary commish-only" type="button" id="commissionerBtn">Build recap prompt</button>
         </div>
       </div>
       <div class="hero-card glass">
@@ -57,9 +59,9 @@
       </div>
     </section>
 
-    <section class="wrap section" id="week">
-      <div class="section-head">
-        <div><span class="kicker">THIS WEEK</span><h2 id="weekTitle">Matchup board</h2></div>
+    <section class="wrap section reveal-section" id="week" data-section="week">
+      <div class="section-head compact-head">
+        <div><span class="kicker">GAME DAY</span><h2 id="weekTitle">This week</h2><p class="section-copy">Every matchup, without making you hunt through tabs.</p></div>
         <div class="segmented" id="weekPicker" aria-label="Select week"></div>
       </div>
       <div class="matchup-grid" id="matchupGrid">
@@ -67,86 +69,61 @@
       </div>
     </section>
 
-    <section class="wrap section" id="olympics">
-      <div class="section-head">
-        <div><span class="kicker">SIDE QUEST</span><h2>Fantasy Olympics</h2><p class="section-copy">Automatic medals from the stuff that actually happened in your league.</p></div>
-        <span class="pill">No commissioner math</span>
+    <section class="wrap section reveal-section" id="analytics" data-section="analytics">
+      <div class="section-head compact-head">
+        <div><span class="kicker">POWER BOARD</span><h2>Who’s actually good?</h2><p class="section-copy">One composite ranking: scoring, all-play strength, recent form, record, and consistency.</p></div>
+        <span class="pill" id="labThroughWeek">Calculating…</span>
+      </div>
+      <div class="lab-grid">
+        <article class="panel lab-feature power-feature">
+          <div class="panel-title"><span>⚡</span><div><small>POWER RANKINGS</small><h3>Composite team strength</h3></div></div>
+          <p class="panel-explain">35% all-play strength · 30% scoring · 20% recent form · 10% record · 5% consistency.</p>
+          <div id="allPlayList" class="rank-list"></div>
+        </article>
+        <article class="panel weekly-hardware">
+          <div class="panel-title"><span>🏆</span><div><small>SELECTED WEEK</small><h3>The hardware</h3></div></div>
+          <div id="awardsList" class="award-list"></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="wrap section reveal-section" id="olympics">
+      <div class="section-head compact-head">
+        <div><span class="kicker">LEAGUE CHAOS</span><h2>Fantasy Olympics</h2><p class="section-copy">The week’s accidental medals, generated from what actually happened.</p></div>
       </div>
       <div class="olympics-grid" id="olympicsGrid">
         <div class="skeleton medal"></div><div class="skeleton medal"></div><div class="skeleton medal"></div><div class="skeleton medal"></div>
       </div>
     </section>
 
-    <section class="wrap section" id="analytics">
-      <div class="section-head">
-        <div>
-          <span class="kicker">THE LAB</span>
-          <h2>Who’s actually good — and who’s getting away with it.</h2>
-          <p class="section-copy">Season-long schedule luck and power rankings strip away matchup randomness so the standings have some context.</p>
-        </div>
-        <span class="pill" id="labThroughWeek">Calculating…</span>
-      </div>
-      <div class="lab-grid">
-        <article class="panel panel-dark lab-feature">
-          <div class="panel-title"><span>🍀</span><div><small>LUCK WATCH</small><h3>Wins gained or lost to the schedule</h3></div></div>
-          <p class="panel-explain">Expected wins are based on how many teams your score would have beaten each week. <strong>+1.0 W</strong> means your real record has about one extra win versus schedule-neutral performance; negative means you’ve been unlucky.</p>
-          <div id="luckList" class="rank-list"></div>
-        </article>
-        <article class="panel lab-feature">
-          <div class="panel-title"><span>⚡</span><div><small>POWER RANKINGS</small><h3>Composite team strength</h3></div></div>
-          <p class="panel-explain">Power score: <strong>35% all-play strength</strong>, 30% scoring, 20% recent 3-week form, 10% actual record and 5% consistency. Arrows show movement since last week.</p>
-          <div id="allPlayList" class="rank-list"></div>
-        </article>
-        <article class="panel">
-          <div class="panel-title"><span>🏆</span><div><small>SELECTED WEEK</small><h3>The hardware</h3></div></div>
-          <p class="panel-explain">These awards follow the week selected above, while Luck Watch and Power Rankings stay season-to-date.</p>
-          <div id="awardsList" class="award-list"></div>
-        </article>
-      </div>
-    </section>
-
-    <section class="wrap section" id="positions">
-      <div class="section-head">
-        <div>
-          <span class="kicker">POSITION ROOM</span>
-          <h2>Where every team is getting its points.</h2>
-          <p class="section-copy">Season-to-date points scored by the player occupying each starting lineup slot. Pick a position to rank the league.</p>
-        </div>
+    <section class="wrap section reveal-section" id="positions">
+      <div class="section-head compact-head">
+        <div><span class="kicker">POSITION ROOM</span><h2>Where the points come from.</h2><p class="section-copy">Season-to-date production from each starting lineup slot.</p></div>
         <span class="pill" id="positionThroughWeek">Through Week —</span>
       </div>
       <div class="position-shell panel">
         <div class="position-tabs" id="positionPicker" aria-label="Position leaderboard"></div>
         <div class="position-summary" id="positionSummary"></div>
-        <div class="position-leaderboard" id="positionLeaderboard">
-          <div class="skeleton tall"></div>
-        </div>
+        <div class="position-leaderboard" id="positionLeaderboard"><div class="skeleton tall"></div></div>
       </div>
     </section>
 
-    <section class="wrap section commish-only" id="waivers">
-      <div class="section-head">
-        <div>
-          <span class="kicker">COMMISSIONER TOOL</span>
-          <h2>Your waiver wire shortlist.</h2>
-          <p class="section-copy">Unrostered players ranked using Sleeper add trends, recent production, injury status, and where your roster is weakest versus the league.</p>
-        </div>
+    <section class="wrap section commish-only reveal-section" id="waivers">
+      <div class="section-head compact-head">
+        <div><span class="kicker">PRIVATE TOOL</span><h2>Waiver shortlist.</h2><p class="section-copy">Sleeper trends + recent production + your roster needs.</p></div>
         <button class="btn btn-secondary" type="button" id="refreshWaiversBtn">↻ Recalculate</button>
       </div>
       <div class="waiver-layout">
         <aside class="panel waiver-profile">
           <span class="kicker">YOUR TEAM</span>
-          <label class="stacked-label">Commissioner roster<select id="commissionerRosterSelect"></select></label>
+          <label class="stacked-label">Roster<select id="commissionerRosterSelect"></select></label>
           <div id="rosterNeeds" class="needs-grid"></div>
-          <p class="microcopy">Your selection is saved only on this browser. Public visitors never see this section.</p>
         </aside>
         <div class="panel waiver-board">
           <div class="waiver-board-head">
             <div><strong>Recommended pickups</strong><span id="waiverStatus">Waiting for league data…</span></div>
             <div class="position-filter" id="waiverPositionFilter">
-              <button type="button" data-pos="ALL" class="active">All</button>
-              <button type="button" data-pos="QB">QB</button><button type="button" data-pos="RB">RB</button>
-              <button type="button" data-pos="WR">WR</button><button type="button" data-pos="TE">TE</button>
-              <button type="button" data-pos="K">K</button><button type="button" data-pos="DEF">DEF</button>
+              <button type="button" data-pos="ALL" class="active">All</button><button type="button" data-pos="QB">QB</button><button type="button" data-pos="RB">RB</button><button type="button" data-pos="WR">WR</button><button type="button" data-pos="TE">TE</button><button type="button" data-pos="K">K</button><button type="button" data-pos="DEF">DEF</button>
             </div>
           </div>
           <div id="waiverList" class="waiver-list"></div>
@@ -154,63 +131,50 @@
       </div>
     </section>
 
-    <section class="wrap section" id="standings">
-      <div class="section-head"><div><span class="kicker">THE BORING BUT IMPORTANT PART</span><h2>League standings</h2></div></div>
+    <section class="wrap section reveal-section" id="standings" data-section="standings">
+      <div class="section-head compact-head"><div><span class="kicker">STANDINGS</span><h2>The table.</h2><p class="section-copy">The boring part still matters.</p></div></div>
       <div class="table-shell panel">
-        <table>
-          <thead><tr><th>#</th><th>Team</th><th>Record</th><th>PF</th><th>PA</th><th>Streak</th></tr></thead>
-          <tbody id="standingsBody"><tr><td colspan="6">Loading Sleeper standings…</td></tr></tbody>
-        </table>
+        <table><thead><tr><th>#</th><th>Team</th><th>Record</th><th>PF</th><th>PA</th><th>Streak</th></tr></thead><tbody id="standingsBody"><tr><td colspan="6">Loading Sleeper standings…</td></tr></tbody></table>
       </div>
     </section>
 
-    <section class="wrap section" id="history">
-      <div class="section-head">
-        <div><span class="kicker">LEAGUE LORE</span><h2>Weekly recap archive</h2><p class="section-copy">Commissioner write-ups stay separate from Sleeper and live here forever.</p></div>
+    <section class="wrap section reveal-section" id="history" data-section="history">
+      <div class="section-head compact-head">
+        <div><span class="kicker">LEAGUE LORE</span><h2>Weekly recaps.</h2><p class="section-copy">The part everyone remembers after the scores are forgotten.</p></div>
         <button class="btn btn-primary commish-only" id="newRecapBtn" type="button">+ New recap</button>
       </div>
       <div class="recap-grid" id="recapGrid"></div>
     </section>
 
-    <section class="wrap section bottom-cta">
-      <div><span class="kicker">NEXT UP</span><h2>Turn each Tuesday into a league content drop.</h2><p>Scores and analytics auto-fill from Sleeper. You add the jokes, receipts, and context only your league knows.</p></div>
-      <button class="btn btn-light commish-only" id="ctaRecapBtn" type="button">Write this week’s recap</button>
+    <section class="wrap section bottom-cta reveal-section">
+      <div><span class="kicker">TUESDAY DROP</span><h2>Turn the week into content.</h2><p>Copy the league data prompt, bring it to ChatGPT, then publish the finished roast.</p></div>
+      <button class="btn btn-light commish-only" id="ctaRecapBtn" type="button">Build recap prompt</button>
     </section>
   </main>
 
-  <footer class="footer wrap">
-    <div><strong>Dudes Being Dudes</strong><span>Powered by Sleeper’s public read-only API.</span></div>
-    <div class="footer-meta">League <code>1395115881683484672</code></div>
-  </footer>
+  <footer class="footer wrap"><div><strong>Dudes Being Dudes</strong><span>Powered by Sleeper’s public read-only API.</span></div><div class="footer-meta">League <code>1395115881683484672</code></div></footer>
 
   <dialog id="commissionerDialog" class="dialog">
     <form method="dialog" class="dialog-card" id="recapForm">
-      <div class="dialog-head">
-        <div><span class="kicker">COMMISSIONER MODE</span><h2>New weekly recap</h2></div>
-        <button class="icon-btn" value="cancel" aria-label="Close">×</button>
-      </div>
-      <div class="commish-generator">
-        <div><strong>Start with a full draft</strong><span>The selected week’s scores, margins, all-play results, luck, awards and position leaders become an editable first draft.</span></div>
-        <button class="btn btn-primary" type="button" id="generateRecapBtn">✨ Write the recap for me</button>
-      </div>
+      <div class="dialog-head"><div><span class="kicker">COMMISSIONER MODE</span><h2>Weekly recap</h2></div><button class="icon-btn" value="cancel" aria-label="Close">×</button></div>
+      <div class="commish-generator"><div><strong>Build a concise ChatGPT prompt</strong><span>Matchups, awards, Power Rankings, and the storylines worth mentioning.</span></div></div>
       <div class="form-grid">
         <label>Week<select id="recapWeek"></select></label>
         <label>Style<select id="recapStyle"><option value="funny">Funny / roast-heavy</option><option value="balanced">Balanced</option><option value="sportswriter">Sportswriter</option></select></label>
         <label class="full">Headline<input id="recapHeadline" placeholder="Week 4 was an absolute disaster" /></label>
         <label class="full">Opening take<textarea id="recapIntro" rows="3" placeholder="Set the scene…"></textarea></label>
-        <label class="full">Full recap<textarea id="recapBody" rows="14" placeholder="Matchup notes, trash talk, receipts, awards…"></textarea></label>
+        <label class="full">Full recap<textarea id="recapBody" rows="14" placeholder="Paste the finished write-up here…"></textarea></label>
       </div>
       <div class="auto-summary" id="autoSummary"></div>
-      <div class="dialog-actions">
-        <button class="btn btn-secondary" type="button" id="saveDraftBtn">Save private draft</button>
-        <button class="btn btn-primary" type="button" id="publishBtn">Publish through GitHub</button>
-      </div>
-      <p class="form-note">Drafts stay private on this device. Publishing opens a pre-filled GitHub issue; the repo workflow only accepts recap submissions from <strong>steviej232</strong>, then updates the public archive.</p>
+      <div class="dialog-actions"><button class="btn btn-secondary" type="button" id="saveDraftBtn">Save draft</button><button class="btn btn-primary" type="button" id="publishBtn">Publish through GitHub</button></div>
+      <p class="form-note">Drafts stay private on this device. Publishing is authorized by the GitHub workflow for <strong>steviej232</strong>.</p>
     </form>
   </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="app.js" defer></script>
   <script src="lab.js" defer></script>
+  <script src="edge.js" defer></script>
+  <script src="experience.js" defer></script>
 </body>
 </html>
