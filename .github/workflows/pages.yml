@@ -40,6 +40,7 @@ jobs:
         shell: bash
         run: |
           node --check lab.js
+          node --check connect.js
           ! grep -q "Playoff Odds + Scenario Tool" lab.js
           ! grep -q "SEASON LUCK WATCH" lab.js
           ! grep -q "ALL-PLAY RESULTS" lab.js
