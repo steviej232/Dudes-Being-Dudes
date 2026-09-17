@@ -11,6 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="analytics.css" />
+  <link rel="stylesheet" href="lab.css" />
 </head>
 <body>
   <div class="noise"></div>
@@ -78,19 +79,27 @@
 
     <section class="wrap section" id="analytics">
       <div class="section-head">
-        <div><span class="kicker">THE LAB</span><h2>Who’s good. Who’s lucky. Who’s lying to themselves.</h2><p class="section-copy">All-play results compare every team against every other team that week.</p></div>
+        <div>
+          <span class="kicker">THE LAB</span>
+          <h2>Who’s actually good — and who’s getting away with it.</h2>
+          <p class="section-copy">Season-long schedule luck and power rankings strip away matchup randomness so the standings have some context.</p>
+        </div>
+        <span class="pill" id="labThroughWeek">Calculating…</span>
       </div>
       <div class="lab-grid">
-        <article class="panel panel-dark">
-          <div class="panel-title"><span>🍀</span><div><small>LUCK WATCH</small><h3>Record vs. all-play</h3></div></div>
+        <article class="panel panel-dark lab-feature">
+          <div class="panel-title"><span>🍀</span><div><small>LUCK WATCH</small><h3>Wins gained or lost to the schedule</h3></div></div>
+          <p class="panel-explain">Expected wins are based on how many teams your score would have beaten each week. <strong>+1.0 W</strong> means your real record has about one extra win versus schedule-neutral performance; negative means you’ve been unlucky.</p>
           <div id="luckList" class="rank-list"></div>
         </article>
-        <article class="panel">
-          <div class="panel-title"><span>📊</span><div><small>WEEKLY POWER</small><h3>All-play standings</h3></div></div>
+        <article class="panel lab-feature">
+          <div class="panel-title"><span>⚡</span><div><small>POWER RANKINGS</small><h3>Composite team strength</h3></div></div>
+          <p class="panel-explain">Power score: <strong>35% all-play strength</strong>, 30% scoring, 20% recent 3-week form, 10% actual record and 5% consistency. Arrows show movement since last week.</p>
           <div id="allPlayList" class="rank-list"></div>
         </article>
         <article class="panel">
-          <div class="panel-title"><span>🏆</span><div><small>WEEKLY AWARDS</small><h3>The hardware</h3></div></div>
+          <div class="panel-title"><span>🏆</span><div><small>SELECTED WEEK</small><h3>The hardware</h3></div></div>
+          <p class="panel-explain">These awards follow the week selected above, while Luck Watch and Power Rankings stay season-to-date.</p>
           <div id="awardsList" class="award-list"></div>
         </article>
       </div>
@@ -108,7 +117,9 @@
       <div class="position-shell panel">
         <div class="position-tabs" id="positionPicker" aria-label="Position leaderboard"></div>
         <div class="position-summary" id="positionSummary"></div>
-        <div class="position-leaderboard" id="positionLeaderboard"><div class="skeleton tall"></div></div>
+        <div class="position-leaderboard" id="positionLeaderboard">
+          <div class="skeleton tall"></div>
+        </div>
       </div>
     </section>
 
@@ -200,5 +211,6 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="app.js" defer></script>
+  <script src="lab.js" defer></script>
 </body>
 </html>
