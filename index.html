@@ -38,8 +38,8 @@
     <section class="hero wrap reveal-section">
       <div class="hero-copy">
         <div class="eyebrow" id="leagueStatus">CONNECTING TO SLEEPER…</div>
-        <h1>Your league.<br><span>More personality.</span></h1>
-        <p id="leagueIntro">Live matchups, power rankings, league nonsense, and commissioner tools built on top of Sleeper.</p>
+        <h1>Week <span id="heroWeekLabel">—</span>.<br>Your league at a glance.</h1>
+        <p id="leagueIntro">Matchups, Power Rankings, and the few things worth paying attention to right now.</p>
         <div class="hero-actions">
           <a class="btn btn-primary" href="#week">See this week <span>↓</span></a>
           <button class="btn btn-secondary commish-only" type="button" id="commissionerBtn">Build recap prompt</button>
@@ -61,7 +61,7 @@
 
     <section class="wrap section reveal-section" id="week" data-section="week">
       <div class="section-head compact-head">
-        <div><span class="kicker">GAME DAY</span><h2 id="weekTitle">This week</h2><p class="section-copy">Every matchup, without making you hunt through tabs.</p></div>
+        <div><span class="kicker">GAME DAY</span><h2 id="weekTitle">This week</h2><p class="section-copy">Scores first. Everything else is secondary.</p></div>
         <div class="segmented" id="weekPicker" aria-label="Select week"></div>
       </div>
       <div class="matchup-grid" id="matchupGrid">
@@ -98,7 +98,7 @@
 
     <section class="wrap section reveal-section" id="positions">
       <div class="section-head compact-head">
-        <div><span class="kicker">POSITION ROOM</span><h2>Where the points come from.</h2><p class="section-copy">Season-to-date production from each starting lineup slot.</p></div>
+        <div><span class="kicker">POSITION ROOM</span><h2>Position leaders.</h2><p class="section-copy">Top performers first. Expand only when you want the full board.</p></div>
         <span class="pill" id="positionThroughWeek">Through Week —</span>
       </div>
       <div class="position-shell panel">
@@ -108,47 +108,17 @@
       </div>
     </section>
 
-    <section class="wrap section commish-only reveal-section" id="waivers">
-      <div class="section-head compact-head">
-        <div><span class="kicker">PRIVATE TOOL</span><h2>Waiver shortlist.</h2><p class="section-copy">Sleeper trends + recent production + your roster needs.</p></div>
-        <button class="btn btn-secondary" type="button" id="refreshWaiversBtn">↻ Recalculate</button>
-      </div>
-      <div class="waiver-layout">
-        <aside class="panel waiver-profile">
-          <span class="kicker">YOUR TEAM</span>
-          <label class="stacked-label">Roster<select id="commissionerRosterSelect"></select></label>
-          <div id="rosterNeeds" class="needs-grid"></div>
-        </aside>
-        <div class="panel waiver-board">
-          <div class="waiver-board-head">
-            <div><strong>Recommended pickups</strong><span id="waiverStatus">Waiting for league data…</span></div>
-            <div class="position-filter" id="waiverPositionFilter">
-              <button type="button" data-pos="ALL" class="active">All</button><button type="button" data-pos="QB">QB</button><button type="button" data-pos="RB">RB</button><button type="button" data-pos="WR">WR</button><button type="button" data-pos="TE">TE</button><button type="button" data-pos="K">K</button><button type="button" data-pos="DEF">DEF</button>
-            </div>
-          </div>
-          <div id="waiverList" class="waiver-list"></div>
-        </div>
-      </div>
-    </section>
-
     <section class="wrap section reveal-section" id="standings" data-section="standings">
       <div class="section-head compact-head"><div><span class="kicker">STANDINGS</span><h2>The table.</h2><p class="section-copy">The boring part still matters.</p></div></div>
-      <div class="table-shell panel">
-        <table><thead><tr><th>#</th><th>Team</th><th>Record</th><th>PF</th><th>PA</th><th>Streak</th></tr></thead><tbody id="standingsBody"><tr><td colspan="6">Loading Sleeper standings…</td></tr></tbody></table>
-      </div>
+      <div class="standings-list panel" id="standingsList"><div class="skeleton tall"></div></div>
     </section>
 
     <section class="wrap section reveal-section" id="history" data-section="history">
       <div class="section-head compact-head">
-        <div><span class="kicker">LEAGUE LORE</span><h2>Weekly recaps.</h2><p class="section-copy">The part everyone remembers after the scores are forgotten.</p></div>
+        <div><span class="kicker">LEAGUE LORE</span><h2>Weekly recaps.</h2><p class="section-copy">Latest story up top. Older weeks stay out of the way.</p></div>
         <button class="btn btn-primary commish-only" id="newRecapBtn" type="button">+ New recap</button>
       </div>
       <div class="recap-grid" id="recapGrid"></div>
-    </section>
-
-    <section class="wrap section bottom-cta reveal-section">
-      <div><span class="kicker">TUESDAY DROP</span><h2>Turn the week into content.</h2><p>Copy the league data prompt, bring it to ChatGPT, then publish the finished roast.</p></div>
-      <button class="btn btn-light commish-only" id="ctaRecapBtn" type="button">Build recap prompt</button>
     </section>
   </main>
 
