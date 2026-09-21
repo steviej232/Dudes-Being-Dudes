@@ -147,33 +147,36 @@ function luckRows(rows){
 function populateWeeks(){
   const max = Math.max(1, Math.min(18, Number(state.currentWeek || 1)));
   const picker = $("weekPicker");
-  picker.innerHTML = "";
-  const start = Math.max(1, max - 5);
-  for(let week=start; week<=max; week++){
-    const b = document.createElement("button");
-    b.type = "button";
-    b.textContent = `W${week}`;
-    b.className = week === state.selectedWeek ? "active" : "";
-    b.addEventListener("click", async () => {
-      state.selectedWeek = week;
-      populateWeeks();
-      await renderWeek();
-    });
-    picker.appendChild(b);
-  }
+  const selected = Math.max(1, Math.min(max, Number(state.selectedWeek || max)));
+  state.selectedWeek = selected;
+  picker.innerHTML = `
+    <button type="button" class="week-step" data-week="${selected-1}" ${selected<=1?"disabled":""} aria-label="Previous week">←</button>
+    <button type="button" class="week-current active" aria-current="true">Week ${selected}</button>
+    <button type="button" class="week-step" data-week="${selected+1}" ${selected>=max?"disabled":""} aria-label="Next week">→</button>
+    <label class="week-jump"><span>Choose</span><select id="weekJumpSelect" aria-label="Choose week">${Array.from({length:max},(_,i)=>`<option value="${i+1}" ${i+1===selected?"selected":""}>Week ${i+1}</option>`).join("")}</select></label>`;
+  picker.querySelectorAll("[data-week]").forEach(btn=>btn.addEventListener("click",async()=>{
+    if(btn.disabled) return;
+    state.selectedWeek=Number(btn.dataset.week);
+    populateWeeks();
+    await renderWeek();
+  }));
+  $("weekJumpSelect")?.addEventListener("change",async event=>{
+    state.selectedWeek=Number(event.target.value);
+    populateWeeks();
+    await renderWeek();
+  });
+
   const select = $("recapWeek");
-  select.innerHTML = "";
-  for(let week=1; week<=max; week++){
-    const o = document.createElement("option");
-    o.value = week; o.textContent = `Week ${week}`;
-    if(week === state.selectedWeek) o.selected = true;
-    select.appendChild(o);
-  }
+  select.innerHTML = Array.from({length:max},(_,i)=>`<option value="${i+1}" ${i+1===selected?"selected":""}>Week ${i+1}</option>`).join("");
 }
 
 async function renderWeek(){
   const rows = await getMatchups(state.selectedWeek);
   $("weekTitle").textContent = `Week ${state.selectedWeek} matchup board`;
+  const top = [...rows].sort((a,b)=>Number(b.points||0)-Number(a.points||0))[0];
+  if(top && state.selectedWeek===state.currentWeek && $("heroCallout")){
+    $("heroCallout").textContent = `Week ${state.currentWeek} • ${teamName(top.roster_id)} leads with ${round(top.points)} • ${state.users.length} managers`;
+  }
   renderMatchups(rows);
   renderOlympics(rows);
   renderLab(rows);
@@ -239,10 +242,20 @@ function renderStandings(){
     if((sb.wins||0)!==(sa.wins||0)) return (sb.wins||0)-(sa.wins||0);
     return pointsFromSettings(sb,"fpts")-pointsFromSettings(sa,"fpts");
   });
-  $("standingsBody").innerHTML = ordered.map((r,i)=>{
-    const s=r.settings||{};
-    const pf=pointsFromSettings(s,"fpts"), pa=pointsFromSettings(s,"fpts_against");
-    return `<tr><td><span class="rank-badge">${i+1}</span></td><td><div class="team-cell"><span class="avatar">${teamAvatar(r.roster_id)}</span><strong>${esc(teamName(r.roster_id))}</strong></div></td><td>${esc(actualRecord(r))}</td><td>${round(pf)}</td><td>${round(pa)}</td><td>${esc(s.streak || "—")}</td></tr>`;
+  const box=$("standingsList");
+  if(!box) return;
+  box.innerHTML = ordered.map((r,i)=>{
+    const st=r.settings||{};
+    const pf=pointsFromSettings(st,"fpts"), pa=pointsFromSettings(st,"fpts_against");
+    return `<details class="standing-row ${i<3?"podium":""}">
+      <summary>
+        <span class="standing-rank">${i+1}</span>
+        <div class="standing-team"><span class="avatar">${teamAvatar(r.roster_id)}</span><div><strong>${esc(teamName(r.roster_id))}</strong><small>${esc(actualRecord(r))}</small></div></div>
+        <div class="standing-pf"><strong>${round(pf)}</strong><span>PF</span></div>
+        <span class="standing-more">⌄</span>
+      </summary>
+      <div class="standing-detail"><span><b>${round(pa)}</b> PA</span><span><b>${esc(st.streak || "—")}</b> streak</span></div>
+    </details>`;
   }).join("");
 }
 
@@ -277,6 +290,7 @@ function renderPositionPicker(){
   picker.innerHTML = POSITIONS.map(pos=>`<button type="button" data-position="${pos}" class="${(state.positionSelected||"QB")===pos?"active":""}">${pos}</button>`).join("");
   picker.querySelectorAll("button").forEach(btn=>btn.addEventListener("click",()=>{
     state.positionSelected=btn.dataset.position;
+    state.positionExpanded=false;
     renderPositionPicker();
     renderPositionLeaderboard(state.positionSelected);
   }));
@@ -292,27 +306,33 @@ function positionRanking(pos){
 
 function renderPositionLeaderboard(pos){
   const ranking = positionRanking(pos);
-  const leagueTotal = ranking.reduce((s,x)=>s+x.total,0);
+  const leagueTotal = ranking.reduce((sum,x)=>sum+x.total,0);
   const avg = ranking.length ? leagueTotal/ranking.length : 0;
   const best = ranking[0];
+  const myIndex = state.commissionerRosterId ? ranking.findIndex(x=>x.roster_id===state.commissionerRosterId) : -1;
   $("positionSummary").innerHTML = `
-    <div><span>League leader</span><strong>${best ? esc(teamName(best.roster_id)) : "—"}</strong><small>${best ? `${round(best.total)} ${pos} pts` : ""}</small></div>
-    <div><span>League average</span><strong>${round(avg)}</strong><small>${pos} points per team</small></div>
-    <div><span>Weeks counted</span><strong>${state.currentWeek}</strong><small>Season-to-date starting slots</small></div>`;
+    <div><span>Leader</span><strong>${best ? esc(teamName(best.roster_id)) : "—"}</strong><small>${best ? `${round(best.total)} ${pos} pts` : ""}</small></div>
+    <div><span>League avg</span><strong>${round(avg)}</strong><small>${pos} points</small></div>
+    <div><span>${myIndex>=0?"Your rank":"Weeks"}</span><strong>${myIndex>=0?`${myIndex+1}/${ranking.length}`:state.currentWeek}</strong><small>${myIndex>=0?esc(teamName(state.commissionerRosterId)):"Season to date"}</small></div>`;
   if(!state.positionDataAvailable){
-    $("positionLeaderboard").innerHTML = `<div class="empty-card">Sleeper has not returned player-level matchup points yet, so position totals cannot be calculated accurately.</div>`;
+    $("positionLeaderboard").innerHTML = `<div class="empty-card">Sleeper has not returned player-level matchup points yet.</div>`;
     return;
   }
-  $("positionLeaderboard").innerHTML = `<div class="pos-head"><span>Rank</span><span>Team</span><span>Total</span><span>Avg/Wk</span><span>Share</span></div>` +
-    ranking.map((x,i)=>{
-      const share = x.totalTeam ? x.total/x.totalTeam*100 : 0;
-      const width = best?.total ? Math.max(3,x.total/best.total*100) : 0;
-      return `<div class="pos-row">
-        <span class="pos-rank">${i+1}</span>
-        <div class="pos-team"><span class="avatar">${teamAvatar(x.roster_id)}</span><div><strong>${esc(teamName(x.roster_id))}</strong><div class="bar"><i style="width:${width}%"></i></div></div></div>
-        <strong>${round(x.total)}</strong><span>${round(x.total/state.currentWeek)}</span><span>${round(share)}%</span>
-      </div>`;
-    }).join("");
+  const expanded=!!state.positionExpanded;
+  const visible=expanded ? ranking : ranking.filter((x,i)=>i<3 || x.roster_id===state.commissionerRosterId);
+  const rows=visible.map(x=>{
+    const i=ranking.findIndex(r=>r.roster_id===x.roster_id);
+    const share=x.totalTeam?x.total/x.totalTeam*100:0;
+    const width=best?.total?Math.max(3,x.total/best.total*100):0;
+    return `<div class="pos-row ${x.roster_id===state.commissionerRosterId?"is-mine":""}">
+      <span class="pos-rank">${i+1}</span>
+      <div class="pos-team"><span class="avatar">${teamAvatar(x.roster_id)}</span><div><strong>${esc(teamName(x.roster_id))}</strong><div class="bar"><i style="width:${width}%"></i></div></div></div>
+      <strong>${round(x.total)}</strong><span>${round(x.total/state.currentWeek)}</span><span>${round(share)}%</span>
+    </div>`;
+  }).join("");
+  const toggle=ranking.length>3?`<button class="inline-expand" type="button" id="positionExpandBtn">${expanded?"Show summary":"View full leaderboard"}</button>`:"";
+  $("positionLeaderboard").innerHTML = `<div class="pos-head"><span>Rank</span><span>Team</span><span>Total</span><span>Avg/Wk</span><span>Share</span></div>${rows}${toggle}`;
+  $("positionExpandBtn")?.addEventListener("click",()=>{state.positionExpanded=!state.positionExpanded;renderPositionLeaderboard(pos);});
 }
 
 function commissionerCandidates(){
@@ -324,19 +344,23 @@ function commissionerCandidates(){
 
 function setupCommissionerRoster(){
   const candidates = commissionerCandidates();
-  const select = $("commissionerRosterSelect");
-  select.innerHTML = candidates.map(r=>`<option value="${r.roster_id}">${esc(teamName(r.roster_id))}</option>`).join("");
   const saved = Number(localStorage.getItem("dbd_commissioner_roster"));
   const chosen = candidates.some(r=>r.roster_id===saved) ? saved : candidates[0]?.roster_id;
   state.commissionerRosterId = chosen || null;
-  if(chosen) select.value = String(chosen);
-  select.addEventListener("change",()=>{
-    state.commissionerRosterId=Number(select.value);
-    localStorage.setItem("dbd_commissioner_roster",select.value);
-    renderRosterNeeds();
-    loadWaivers(true);
-  });
+  const select = $("commissionerRosterSelect");
+  if(select){
+    select.innerHTML = candidates.map(r=>`<option value="${r.roster_id}">${esc(teamName(r.roster_id))}</option>`).join("");
+    if(chosen) select.value=String(chosen);
+    select.addEventListener("change",()=>{
+      state.commissionerRosterId=Number(select.value);
+      localStorage.setItem("dbd_commissioner_roster",select.value);
+      renderRosterNeeds();
+      loadWaivers(true);
+      renderPositionLeaderboard(state.positionSelected || "QB");
+    });
+  }
   renderRosterNeeds();
+  if(state.seasonPositionTotals.size) renderPositionLeaderboard(state.positionSelected || "QB");
 }
 
 function renderRosterNeeds(){
@@ -346,7 +370,7 @@ function renderRosterNeeds(){
     const idx=ranking.findIndex(x=>x.roster_id===state.commissionerRosterId);
     return `<div class="${idx>=Math.ceil(ranking.length*.6)?"need":""}"><span>${pos}</span><strong>${idx>=0?`${idx+1}/${ranking.length}`:"—"}</strong></div>`;
   }).join("");
-  $("rosterNeeds").innerHTML=html;
+  if($("rosterNeeds")) $("rosterNeeds").innerHTML=html;
 }
 
 async function loadPlayerMap(){
@@ -407,9 +431,10 @@ function needScoreFor(pos){
 async function loadWaivers(force=false){
   if(!document.body.classList.contains("commish")) return;
   const box=$("waiverList");
-  $("waiverStatus").textContent="Analyzing the waiver wire…";
+  const status=$("waiverStatus");
+  if(status) status.textContent="Analyzing the waiver wire…";
   if(force) state.waiverPlayers=[];
-  if(state.waiverPlayers.length){ renderWaivers(); return; }
+  if(state.waiverPlayers.length){ if(box) renderWaivers(); return; }
 
   try{
     const [players,trending] = await Promise.all([
@@ -440,11 +465,11 @@ async function loadWaivers(force=false){
       return {id,pos,player,trend:Number(trend.count||0),trendRank:index+1,recentAvg:avg,needRank:need.rank,needTotal:need.total,score,injury};
     }).filter(Boolean).sort((a,b)=>b.score-a.score);
     state.waiverPlayers=candidates;
-    renderWaivers();
+    if(box) renderWaivers();
   }catch(err){
     console.error(err);
-    $("waiverStatus").textContent="Could not load Sleeper waiver data.";
-    box.innerHTML=`<div class="empty-card">Waiver recommendations are temporarily unavailable. Try Refresh after Sleeper updates.</div>`;
+    if(status) status.textContent="Could not load Sleeper waiver data.";
+    if(box) box.innerHTML=`<div class="empty-card">Waiver recommendations are temporarily unavailable. Try Refresh after Sleeper updates.</div>`;
   }
 }
 
@@ -453,6 +478,7 @@ function playerName(x){
 }
 
 function renderWaivers(){
+  if(!$("waiverList")) return;
   const filter=state.waiverFilter;
   const rows=state.waiverPlayers.filter(x=>filter==="ALL"||x.pos===filter).slice(0,12);
   $("waiverStatus").textContent=`${rows.length} available targets • updated from Sleeper`;
@@ -490,8 +516,12 @@ async function loadRecaps(){
 function renderRecaps(){
   const localDraft=JSON.parse(localStorage.getItem("dbd_recap_draft")||"null");
   const published=[...state.recaps].sort((a,b)=>Number(b.week||0)-Number(a.week||0));
-  const draftCard=document.body.classList.contains("commish") && localDraft ? `<article class="recap-card draft-card"><span class="week">PRIVATE DRAFT • WEEK ${esc(localDraft.week)}</span><h3>${esc(localDraft.headline||"Untitled draft")}</h3><p>${esc(localDraft.intro||"Saved on this device.")}</p><time>Not published</time></article>`:"";
-  $("recapGrid").innerHTML=draftCard + (published.length?published.map(r=>`<article class="recap-card"><span class="week">WEEK ${esc(r.week)}</span><h3>${esc(r.headline)}</h3><p>${esc(r.intro||"")}</p><details><summary class="read-more">Read recap</summary><p class="recap-full">${esc(r.body||"")}</p></details><time>${esc(r.date||"")}</time></article>`).join(""):`<div class="empty-card">No published recaps yet. Commissioner mode can create the first one.</div>`);
+  const draft=document.body.classList.contains("commish")&&localDraft?`<article class="recap-card draft-card"><span class="week">PRIVATE DRAFT • WEEK ${esc(localDraft.week)}</span><h3>${esc(localDraft.headline||"Untitled draft")}</h3><p>${esc(localDraft.intro||"Saved on this device.")}</p><time>Not published</time></article>`:"";
+  if(!published.length){$("recapGrid").innerHTML=draft+`<div class="empty-card">No published recaps yet.</div>`;return;}
+  const latest=published[0];
+  const featured=`<article class="recap-card recap-featured"><span class="week">LATEST • WEEK ${esc(latest.week)}</span><h3>${esc(latest.headline)}</h3><p>${esc(latest.intro||"")}</p><details><summary class="read-more">Read recap</summary><p class="recap-full">${esc(latest.body||"")}</p></details><time>${esc(latest.date||"")}</time></article>`;
+  const older=published.slice(1).map(r=>`<details class="recap-archive-row"><summary><span><b>Week ${esc(r.week)}</b><small>${esc(r.headline)}</small></span><time>${esc(r.date||"")}</time><i>⌄</i></summary><div><p>${esc(r.intro||"")}</p><p class="recap-full">${esc(r.body||"")}</p></div></details>`).join("");
+  $("recapGrid").innerHTML=draft+featured+(older?`<div class="recap-archive">${older}</div>`:"");
 }
 
 function recapFacts(rows){
@@ -565,7 +595,7 @@ function publishRecap(){
 
 function setupCommissionerUI(){
   if(!document.body.classList.contains("commish")) return;
-  ["commissionerBtn","newRecapBtn","ctaRecapBtn"].forEach(id=>$(id)?.addEventListener("click",openRecapDialog));
+  ["commissionerBtn","newRecapBtn"].forEach(id=>$(id)?.addEventListener("click",openRecapDialog));
   $("recapWeek")?.addEventListener("change",updateAutoSummary);
   $("generateRecapBtn")?.addEventListener("click",async()=>{
     const week=Number($("recapWeek").value);
@@ -603,6 +633,7 @@ async function init(){
     $("leagueIntro").textContent=`${league.name || "Your league"} is live. Scores, records, positional production and weekly nonsense update directly from Sleeper.`;
     $("teamCount").textContent=rosters.length;
     $("currentWeek").textContent=state.currentWeek;
+    if($("heroWeekLabel")) $("heroWeekLabel").textContent=state.currentWeek;
     $("seasonYear").textContent=league.season || "—";
     $("heroCallout").textContent=`Week ${state.currentWeek} • ${users.length} managers • ${league.status?.replaceAll("_"," ") || "season live"}`;
 
@@ -611,7 +642,6 @@ async function init(){
     await Promise.all([renderWeek(),loadRecaps(),buildSeasonPositionTotals()]);
     if(document.body.classList.contains("commish")){
       setupCommissionerRoster();
-      setupWaiverFilters();
       setupCommissionerUI();
       await loadWaivers();
     }
