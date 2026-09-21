@@ -7,27 +7,40 @@
   const severe=new Set(['IR','OUT','PUP','SUSPENDED']);
 
   function tool(id,icon,title,desc){return `<details class="panel edge-tool" id="tool-${id}"><summary><span>${icon}</span><div><strong>${title}</strong><small>${desc}</small></div><b>⌄</b></summary><div class="edge-tool-body" id="edge-${id}"><div class="skeleton tall"></div></div></details>`;}
+  function group(id,icon,title,copy,tools,open=false){return `<details class="edge-group" id="edge-group-${id}" ${open?'open':''}><summary><span>${icon}</span><div><strong>${title}</strong><small>${copy}</small></div><b>⌄</b></summary><div class="edge-group-grid">${tools.join('')}</div></details>`;}
   function injectShell(){
     if(document.getElementById('edge')) return;
+    const candidates=commissionerCandidates();
+    const options=candidates.map(r=>`<option value="${r.roster_id}" ${r.roster_id===state.commissionerRosterId?'selected':''}>${e(teamName(r.roster_id))}</option>`).join('');
     const section=document.createElement('section');section.id='edge';section.className='wrap section commish-only edge-section';
-    section.innerHTML=`<div class="section-head edge-head"><div><span class="kicker">PRIVATE • COMMISSIONER ONLY</span><h2>Steve's Edge</h2><p class="section-copy">Your action board for lineup, waivers, trades, streaming and roster management.</p></div><button class="btn btn-secondary" id="edgeRefresh" type="button">↻ Recalculate</button></div>
-      <div class="edge-top edge-rail"><article class="panel edge-action-card"><span class="kicker">WHAT SHOULD I DO TODAY?</span><div id="edgeToday" class="edge-actions"><div class="skeleton tall"></div></div></article><article class="panel edge-score-card"><span class="kicker">TEAM HEALTH</span><div id="edgeHealth"><div class="skeleton tall"></div></div></article><article class="panel panel-dark edge-score-card"><span class="kicker">CHAMPIONSHIP WINDOW</span><div id="edgeWindow"><div class="skeleton tall"></div></div></article></div>
-      <div class="edge-accordion edge-rail" id="edgeTools">
-        ${tool('lineup','🧠','Start / Sit Optimizer','Best lineup from recent scoring, injuries and slot eligibility.')}
-        ${tool('waiverPro','🎯','Waiver Priority Engine','Add/drop recommendations with roster fit and suggested FAAB aggression.')}
-        ${tool('tradeFinder','🤝','Trade Target Finder','Managers with surplus where you are weak, plus an asset to shop.')}
-        ${tool('market','📈','Buy Low / Sell High','Scoring trend gaps that may indicate overreaction opportunities.')}
-        ${tool('handcuffs','🩹','Handcuff & Injury Board','High-leverage backups tied to your roster and current injury risk.')}
-        ${tool('opponent','🎮','Opponent Exploiter','Compare current opponent strength and choose a floor or ceiling strategy.')}
-        ${tool('streamers','🌊','Streaming Planner','QB / TE / K / DEF options using projections when available and recent form otherwise.')}
-        ${tool('drops','🗑️','Drop Risk Analyzer','Bench players ranked from safest hold to most cuttable.')}
-        ${tool('deadline','⏰','Trade Deadline Mode','Best upgrade areas, expendable assets and urgency before the deadline.')}
+    section.innerHTML=`<div class="section-head edge-head"><div><span class="kicker">PRIVATE • YOUR TEAM</span><h2>Steve's Edge</h2><p class="section-copy">One action board. Open deeper tools only when you need them.</p></div><div class="edge-head-controls"><label class="edge-roster-control"><span>Team</span><select id="edgeRosterSelect">${options}</select></label><button class="btn btn-secondary" id="edgeRefresh" type="button">↻ Recalculate</button></div></div>
+      <div class="edge-top"><article class="panel edge-action-card edge-featured"><span class="kicker">DO NOW</span><h3>Your priority list</h3><div id="edgeToday" class="edge-actions"><div class="skeleton tall"></div></div></article><article class="panel edge-score-card"><span class="kicker">TEAM HEALTH</span><div id="edgeHealth"><div class="skeleton tall"></div></div></article><article class="panel panel-dark edge-score-card"><span class="kicker">CHAMPIONSHIP WINDOW</span><div id="edgeWindow"><div class="skeleton tall"></div></div></article></div>
+      <div class="edge-groups" id="edgeTools">
+        ${group('lineup','🧠','Set Lineup','Starts, matchup strategy, and streaming.',[
+          tool('lineup','🧠','Start / Sit','Best lineup from form, health, and eligibility.'),
+          tool('opponent','🎮','Opponent Strategy','Choose floor, balance, or ceiling for this matchup.'),
+          tool('streamers','🌊','Streaming','QB / TE / K / DEF options for the next few weeks.')
+        ],true)}
+        ${group('roster','🎯','Improve Roster','Waivers, trades, market signals, and cuts.',[
+          tool('waiverPro','🎯','Waivers','Best add/drop pairs with FAAB guidance.'),
+          tool('tradeFinder','🤝','Trade Targets','Find managers with surplus where you are weak.'),
+          tool('market','📈','Buy Low / Sell High','Spot scoring trends that may be overreacted to.'),
+          tool('drops','🗑️','Drop Risk','Know who is expendable before you make a move.')
+        ])}
+        ${group('strategy','🩹','Weekly Strategy','Stashes, injuries, and deadline planning.',[
+          tool('handcuffs','🩹','Handcuffs & Injuries','High-leverage backups tied to your roster.'),
+          tool('deadline','⏰','Trade Deadline','Weak spots, expendable assets, and urgency.')
+        ])}
       </div>`;
-    const waivers=document.getElementById('waivers');(waivers?.parentNode||document.querySelector('main')).insertBefore(section,waivers||document.getElementById('standings'));
-    const heroActions=document.querySelector('.hero-actions');if(heroActions&&!document.getElementById('edgeJump'))heroActions.insertAdjacentHTML('beforeend','<a id="edgeJump" class="btn btn-secondary commish-only" href="#edge">⚡ Steve\'s Edge</a>');
-    const nav=document.querySelector('.nav');if(nav&&!nav.querySelector('a[href="#edge"]'))nav.insertAdjacentHTML('beforeend','<a class="commish-only" href="#edge">Steve\'s Edge</a>');
+    const week=document.getElementById('week');
+    (week?.parentNode||document.querySelector('main')).insertBefore(section,week||document.getElementById('standings'));
     document.getElementById('edgeRefresh')?.addEventListener('click',()=>build(true));
-    document.getElementById('commissionerRosterSelect')?.addEventListener('change',()=>setTimeout(()=>build(true),50));
+    document.getElementById('edgeRosterSelect')?.addEventListener('change',event=>{
+      state.commissionerRosterId=Number(event.target.value);
+      localStorage.setItem('dbd_commissioner_roster',event.target.value);
+      if(state.seasonPositionTotals?.size) renderPositionLeaderboard(state.positionSelected || 'QB');
+      build(true);
+    });
   }
 
   function player(id){return state.playerMap?.[String(id)]||{};}
