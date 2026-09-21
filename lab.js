@@ -98,14 +98,12 @@
   }
 
   function ensureRecommendationPanel(){
-    const grid=document.querySelector('#analytics .lab-grid');
-    if(!grid || document.getElementById('recommendationsList')) return;
-    const article=document.createElement('article');
-    article.className='panel lab-recommendations';
-    article.innerHTML=`<div class="panel-title"><span>🧪</span><div><small>MODEL CALLS</small><h3>Power vs. standings</h3></div></div>
-      <p class="panel-explain">These compare actual standings with Power Rankings only. They’re useful storylines, not predictions.</p>
-      <div id="recommendationsList" class="recommendation-list"></div>`;
-    grid.appendChild(article);
+    const powerPanel=document.getElementById('allPlayList')?.closest('article');
+    if(!powerPanel || document.getElementById('recommendationsList')) return;
+    const wrap=document.createElement('div');
+    wrap.className='power-storylines';
+    wrap.innerHTML=`<div class="power-storylines-head"><small>MODEL CALLS</small><span>Power vs. standings</span></div><div id="recommendationsList" class="recommendation-list"></div>`;
+    powerPanel.appendChild(wrap);
   }
 
   function renderRecommendations(metrics,power){
@@ -139,7 +137,11 @@
   function renderSeasonLab(){
     if(!state.seasonAnalytics) return;
     const power=state.powerRankings || [];
-    $("allPlayList").innerHTML = power.map(x=>`<div class="power-row"><span class="power-rank">${x.rank}</span><div class="power-team"><strong>${esc(teamName(x.roster_id))}</strong><small>${round(x.ppg)} PPG • ${Math.round(x.allPlayPct*100)}% all-play • last 3 ${Math.round(x.recentPct*100)}%</small></div><div class="power-score"><strong>${x.power}</strong><span>POWER</span></div>${movementLabel(x.movement)}</div>`).join('');
+    const expanded=!!state.powerExpanded;
+    const visible=expanded ? power : power.slice(0,5);
+    $("allPlayList").innerHTML = visible.map(x=>`<div class="power-row"><span class="power-rank">${x.rank}</span><div class="power-team"><strong>${esc(teamName(x.roster_id))}</strong><small>${round(x.ppg)} PPG • ${Math.round(x.allPlayPct*100)}% all-play • last 3 ${Math.round(x.recentPct*100)}%</small></div><div class="power-score"><strong>${x.power}</strong><span>POWER</span></div>${movementLabel(x.movement)}</div>`).join('') +
+      (power.length>5?`<button class="inline-expand power-expand" type="button" id="powerExpandBtn">${expanded?'Show top 5':'View all teams'}</button>`:'');
+    $("powerExpandBtn")?.addEventListener("click",()=>{state.powerExpanded=!state.powerExpanded;renderSeasonLab();});
     renderRecommendations(state.seasonAnalytics.metrics,power);
     const badge=$("labThroughWeek");
     if(badge) badge.textContent=`Through Week ${state.seasonAnalytics.latestWeek}`;
