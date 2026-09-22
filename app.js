@@ -584,14 +584,47 @@ function saveDraft(){
   toast("Private recap draft saved.");
 }
 
-function publishRecap(){
+async function copyRecapPublishPayload(text){
+  try{
+    await navigator.clipboard.writeText(text);
+    return true;
+  }catch(_){
+    const ta=document.createElement("textarea");
+    ta.value=text;
+    ta.setAttribute("readonly","");
+    ta.style.position="fixed";
+    ta.style.opacity="0";
+    ta.style.pointerEvents="none";
+    document.body.appendChild(ta);
+    ta.select();
+    const ok=document.execCommand("copy");
+    ta.remove();
+    return ok;
+  }
+}
+
+async function publishRecap(){
   const recap={week:Number($("recapWeek").value),headline:$("recapHeadline").value.trim(),intro:$("recapIntro").value.trim(),body:$("recapBody").value.trim(),date:new Date().toISOString().slice(0,10)};
   if(!recap.headline || !recap.body){ toast("Add a headline and recap first."); return; }
-  const issueBody=`<!-- DBD_RECAP -->\nSubmit this issue to publish the recap. The workflow only accepts submissions from steviej232.\n\n\`\`\`json\n${JSON.stringify(recap,null,2)}\n\`\`\``;
-  const url=`https://github.com/${REPO}/issues/new?title=${encodeURIComponent(`Publish Recap: Week ${recap.week}`)}&body=${encodeURIComponent(issueBody)}`;
+
+  const issueBody=`<!-- DBD_RECAP -->
+Paste this entire payload as the issue body, then submit.
+
+\`\`\`json
+${JSON.stringify(recap,null,2)}
+\`\`\``;
+
+  const copied=await copyRecapPublishPayload(issueBody);
+  if(!copied){
+    toast("Could not copy the recap. Copy it manually before opening GitHub.");
+    return;
+  }
+
+  const url=`https://github.com/${REPO}/issues/new?template=publish-recap.md&title=${encodeURIComponent(`Publish Recap: Week ${recap.week}`)}`;
   window.open(url,"_blank","noopener");
-  toast("GitHub opened. Submit the issue to publish.");
+  toast("Recap copied. Paste it into GitHub, then Submit.");
 }
+
 
 function setupCommissionerUI(){
   if(!document.body.classList.contains("commish")) return;
