@@ -7,12 +7,21 @@ on:
 permissions:
   contents: write
   issues: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
 
 jobs:
   publish:
     if: >-
       github.event.issue.user.login == 'steviej232' &&
       contains(github.event.issue.body, '<!-- DBD_RECAP -->')
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -24,7 +33,7 @@ jobs:
         shell: bash
         run: |
           python - <<'PY'
-          import json, os, re, pathlib, sys
+          import json, os, re, pathlib
 
           event = json.load(open(os.environ['GITHUB_EVENT_PATH'], encoding='utf-8'))
           issue = event['issue']
@@ -73,10 +82,32 @@ jobs:
             git push origin main
           fi
 
+      - name: Validate site
+        shell: bash
+        run: |
+          node --check app.js
+          node --check lab.js
+          node --check edge.js
+          node --check experience.js
+          python -m json.tool data/recaps.json >/dev/null
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload site
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: .
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
       - name: Close publish request
+        if: success()
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh issue close "${{ github.event.issue.number }}" \
             --repo "${{ github.repository }}" \
-            --comment "Recap published to the league site. The Pages deploy will refresh automatically."
+            --comment "Recap published and deployed to the league site."
